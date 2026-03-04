@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✨ JS Notes — Net Ninja Diary</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e17;
+    --card: #1a1825;
+    --card2: #211f30;
+    --accent1: #ff6b6b;
+    --accent2: #ffd93d;
+    --accent3: #6bcb77;
+    --accent4: #4d96ff;
+    --accent5: #c77dff;
+    --text: #fffffe;
+    --muted: #a7a9be;
+    --border: rgba(255,255,255,0.08);
+    --glow: 0 0 20px rgba(77,150,255,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated starfield bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 50%, rgba(77,150,255,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(199,125,255,0.06) 0%, transparent 40%),
+      radial-gradient(circle at 50% 80%, rgba(255,107,107,0.04) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.5); }
+  }
+
+  /* Header */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 2rem 2rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent4), var(--accent5));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 0 20px rgba(77,150,255,0.4);
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(77,150,255,0.4); }
+    50% { box-shadow: 0 0 35px rgba(77,150,255,0.7); }
+  }
+
+  .logo h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo h1 span { color: var(--accent4); }
+
+  .logo p {
+    font-family: 'Caveat', cursive;
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin-top: -3px;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .stat-pill .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent3);
+    animation: blink 1.5s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Main layout */
+  .app {
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    height: calc(100vh - 85px);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-top {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .new-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent4), var(--accent5));
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    letter-spacing: 0.3px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 15px rgba(77,150,255,0.3);
+  }
+
+  .new-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(77,150,255,0.5);
+  }
+
+  .new-btn:active { transform: translateY(0); }
+
+  /* Search */
+  .search-wrap {
+    padding: 1rem 1.25rem 0.75rem;
+    position: relative;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem 0.6rem 2.2rem;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-wrap input:focus { border-color: var(--accent4); }
+  .search-wrap input::placeholder { color: var(--muted); }
+
+  .search-icon {
+    position: absolute;
+    left: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 0.8rem;
+    pointer-events: none;
+  }
+
+  /* Notes list */
+  .notes-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+  }
+
+  .notes-list::-webkit-scrollbar { width: 4px; }
+  .notes-list::-webkit-scrollbar-track { background: transparent; }
+  .notes-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .note-item {
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    margin-bottom: 0.4rem;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .note-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 2px 0 0 2px;
+    background: var(--tag-color, var(--accent4));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .note-item:hover, .note-item.active {
+    background: var(--card2);
+    border-color: var(--border);
+  }
+
+  .note-item:hover::before, .note-item.active::before { opacity: 1; }
+
+  .note-item-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.25rem;
+  }
+
+  .note-item-preview {
+    font-family: 'Caveat', cursive;
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .note-item-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.4rem;
+  }
+
+  .note-tag {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.07);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .note-date {
+    font-size: 0.62rem;
+    color: var(--muted);
+    opacity: 0.6;
+  }
+
+  .empty-notes {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .empty-notes .empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .empty-notes p {
+    font-family: 'Caveat', cursive;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  /* Editor area */
+  .editor-area {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .editor-toolbar {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .title-input {
+    flex: 1;
+    min-width: 200px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .title-input::placeholder { color: rgba(255,255,255,0.2); }
+
+  .toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .tag-select {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    padding: 0.4rem 0.6rem;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .tag-select:focus { border-color: var(--accent4); }
+
+  .icon-btn {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card2);
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: all 0.15s;
+  }
+
+  .icon-btn:hover {
+    border-color: var(--accent1);
+    color: var(--accent1);
+    background: rgba(255,107,107,0.08);
+  }
+
+  .save-btn {
+    background: rgba(107,203,119,0.12);
+    border-color: rgba(107,203,119,0.3);
+    color: var(--accent3);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0 1rem;
+    width: auto;
+    gap: 0.4rem;
+    letter-spacing: 0.5px;
+  }
+
+  .save-btn:hover {
+    background: rgba(107,203,119,0.2);
+    border-color: var(--accent3);
+    color: var(--accent3);
+  }
+
+  /* Format bar */
+  .format-bar {
+    padding: 0.6rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    background: rgba(255,255,255,0.015);
+  }
+
+  .fmt-btn {
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    transition: all 0.15s;
+  }
+
+  .fmt-btn:hover {
+    background: var(--card2);
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .fmt-sep {
+    width: 1px; height: 18px;
+    background: var(--border);
+    margin: 0 0.2rem;
+  }
+
+  /* Editor body */
+  .editor-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .line-numbers {
+    padding: 1.25rem 0;
+    width: 44px;
+    text-align: right;
+    padding-right: 0.75rem;
+    color: rgba(255,255,255,0.15);
+    font-size: 0.72rem;
+    line-height: 1.65rem;
+    user-select: none;
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .note-editor {
+    flex: 1;
+    padding: 1.25rem 1.5rem;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.65rem;
+    resize: none;
+    overflow-y: auto;
+    tab-size: 2;
+  }
+
+  .note-editor::-webkit-scrollbar { width: 4px; }
+  .note-editor::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .note-editor::placeholder { color: rgba(255,255,255,0.15); font-family: 'Caveat', cursive; font-size: 1rem; }
+
+  /* Status bar */
+  .status-bar {
+    padding: 0.5rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.01);
+  }
+
+  .status-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.68rem;
+    color: var(--muted);
+    opacity: 0.7;
+  }
+
+  .status-right {
+    font-family: 'Caveat', cursive;
+    font-size: 0.85rem;
+    color: var(--muted);
+    opacity: 0.6;
+  }
+
+  /* Welcome screen */
+  .welcome {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .welcome-emoji {
+    font-size: 4rem;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .welcome h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  .welcome p {
+    font-family: 'Caveat', cursive;
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 320px;
+    line-height: 1.6;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--card2);
+    border: 1px solid rgba(107,203,119,0.3);
+    color: var(--accent3);
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    font-family: 'Caveat', cursive;
+    font-size: 1rem;
+    z-index: 1000;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Tag colors */
+  .tag-variables { --tag-color: var(--accent4); }
+  .tag-functions { --tag-color: var(--accent5); }
+  .tag-arrays { --tag-color: var(--accent2); }
+  .tag-loops { --tag-color: var(--accent3); }
+  .tag-dom { --tag-color: var(--accent1); }
+  .tag-events { --tag-color: #ff9f43; }
+  .tag-objects { --tag-color: #00cec9; }
+  .tag-general { --tag-color: var(--muted); }
+
+  /* Scrollbar for notes list */
+  .notes-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
+
+  @media (max-width: 640px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .sidebar { height: 220px; border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <h1>JS<span>Notes</span></h1>
+      <p>✍️ your net ninja diary</p>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="stat-pill"><span class="dot"></span><span id="note-count">0 notes</span></div>
+    <div class="stat-pill">🎯 <span id="topic-label">Select a topic</span></div>
+  </div>
+</header>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <button class="new-btn" onclick="newNote()">
+        <span>+</span> New Note
+      </button>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search notes..." id="search-input" oninput="filterNotes()">
+    </div>
+    <div class="notes-list" id="notes-list">
+      <div class="empty-notes">
+        <span class="empty-icon">📒</span>
+        <p>No notes yet!<br>Hit <strong>+ New Note</strong> to start your JS journey ✨</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Editor -->
+  <main class="editor-area" id="editor-area">
+    <div class="welcome" id="welcome-screen">
+      <span class="welcome-emoji">🚀</span>
+      <h2>Ready to learn JS?</h2>
+      <p>Create your first note and jot down everything from Net Ninja's tutorials. Your code, your way!</p>
+    </div>
+
+    <div id="editor-view" style="display:none; flex-direction:column; height:100%; overflow:hidden; display:none;">
+      <div class="editor-toolbar">
+        <input class="title-input" id="note-title" type="text" placeholder="Note title..." oninput="markDirty()">
+        <div class="toolbar-actions">
+          <select class="tag-select" id="note-tag" onchange="markDirty()">
+            <option value="general">📌 General</option>
+            <option value="variables">🔵 Variables</option>
+            <option value="functions">🟣 Functions</option>
+            <option value="arrays">🟡 Arrays</option>
+            <option value="loops">🟢 Loops</option>
+            <option value="dom">🔴 DOM</option>
+            <option value="events">🟠 Events</option>
+            <option value="objects">🩵 Objects</option>
+          </select>
+          <button class="icon-btn" onclick="deleteNote()" title="Delete note">🗑️</button>
+          <button class="icon-btn save-btn" onclick="saveNote()">💾 Save</button>
+        </div>
+      </div>
+
+      <div class="format-bar">
+        <button class="fmt-btn" onclick="insertSnippet('// ')" title="Comment">// comment</button>
+        <button class="fmt-btn" onclick="insertSnippet('const  = ;', 6)" title="const">const</button>
+        <button class="fmt-btn" onclick="insertSnippet('let  = ;', 4)" title="let">let</button>
+        <button class="fmt-btn" onclick="insertSnippet('function name() {\n  \n}', 9)" title="function">fn()</button>
+        <button class="fmt-btn" onclick="insertSnippet('console.log();', 12)" title="console.log">log()</button>
+        <div class="fmt-sep"></div>
+        <button class="fmt-btn" onclick="insertSnippet('for (let i = 0; i < arr.length; i++) {\n  \n}')" title="for loop">for</button>
+        <button class="fmt-btn" onclick="insertSnippet('arr.forEach(item => {\n  \n});')" title="forEach">forEach</button>
+        <button class="fmt-btn" onclick="insertSnippet('arr.map(item => item);')" title="map">map</button>
+        <button class="fmt-btn" onclick="insertSnippet('arr.filter(item => item);')" title="filter">filter</button>
+        <div class="fmt-sep"></div>
+        <button class="fmt-btn" onclick="insertSnippet('document.querySelector(\'\');', 26)" title="querySelector">querySelector</button>
+        <button class="fmt-btn" onclick="insertSnippet('element.addEventListener(\'click\', () => {\n  \n});')" title="addEventListener">addEventListener</button>
+      </div>
+
+      <div class="editor-body">
+        <div class="line-numbers" id="line-numbers">1</div>
+        <textarea class="note-editor" id="note-editor"
+          placeholder="Start writing your JS notes here... 
+// This is your personal JS diary!
+// Try the quick-insert buttons above ✨"
+          oninput="updateLines(); markDirty()"
+          onkeydown="handleTab(event)"
+          spellcheck="false"></textarea>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-left">
+          <span id="word-count">0 words</span>
+          <span id="line-count">1 line</span>
+          <span id="char-count">0 chars</span>
+        </div>
+        <div class="status-right" id="save-status">✨ All changes saved</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- State ----
+let notes = JSON.parse(localStorage.getItem('jsnotes_v1') || '[]');
+let activeId = null;
+let dirty = false;
+let saveTimer = null;
+
+// ---- Stars ----
+(function() {
+  const c = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.setProperty('--dur', (2 + Math.random() * 4) + 's');
+    s.style.setProperty('--delay', (Math.random() * 5) + 's');
+    s.style.opacity = Math.random() * 0.5;
+    c.appendChild(s);
+  }
+})();
+
+// ---- Render ----
+function renderList(filter = '') {
+  const list = document.getElementById('notes-list');
+  const q = filter.toLowerCase();
+  const filtered = notes.filter(n =>
+    n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)
+  );
+
+  document.getElementById('note-count').textContent = notes.length + (notes.length === 1 ? ' note' : ' notes');
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-notes">
+      <span class="empty-icon">${filter ? '🔎' : '📒'}</span>
+      <p>${filter ? 'No notes match "' + filter + '"' : 'No notes yet!<br>Hit <strong>+ New Note</strong> to start ✨'}</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(n => `
+    <div class="note-item tag-${n.tag} ${n.id === activeId ? 'active' : ''}" onclick="openNote('${n.id}')">
+      <div class="note-item-title">${n.title || 'Untitled Note'}</div>
+      <div class="note-item-preview">${n.content.slice(0, 60).replace(/\n/g, ' ') || 'Empty note...'}</div>
+      <div class="note-item-meta">
+        <span class="note-tag">${tagLabel(n.tag)}</span>
+        <span class="note-date">${formatDate(n.updatedAt)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function tagLabel(t) {
+  const map = { general:'📌 General', variables:'🔵 Variables', functions:'🟣 Functions',
+    arrays:'🟡 Arrays', loops:'🟢 Loops', dom:'🔴 DOM', events:'🟠 Events', objects:'🩵 Objects' };
+  return map[t] || '📌 General';
+}
+
+function formatDate(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+}
+
+// ---- CRUD ----
+function newNote() {
+  const id = 'note_' + Date.now();
+  const note = { id, title: '', content: '', tag: 'general', createdAt: Date.now(), updatedAt: Date.now() };
+  notes.unshift(note);
+  persist();
+  openNote(id);
+  setTimeout(() => document.getElementById('note-title').focus(), 50);
+}
+
+function openNote(id) {
+  activeId = id;
+  const note = notes.find(n => n.id === id);
+  if (!note) return;
+
+  document.getElementById('welcome-screen').style.display = 'none';
+  const ev = document.getElementById('editor-view');
+  ev.style.display = 'flex';
+
+  document.getElementById('note-title').value = note.title;
+  document.getElementById('note-tag').value = note.tag;
+  document.getElementById('note-editor').value = note.content;
+  document.getElementById('topic-label').textContent = tagLabel(note.tag);
+
+  updateLines();
+  updateStats();
+  dirty = false;
+  document.getElementById('save-status').textContent = '✨ All changes saved';
+  renderList(document.getElementById('search-input').value);
+}
+
+function saveNote() {
+  if (!activeId) return;
+  const note = notes.find(n => n.id === activeId);
+  if (!note) return;
+
+  note.title = document.getElementById('note-title').value.trim() || 'Untitled Note';
+  note.content = document.getElementById('note-editor').value;
+  note.tag = document.getElementById('note-tag').value;
+  note.updatedAt = Date.now();
+  document.getElementById('topic-label').textContent = tagLabel(note.tag);
+
+  persist();
+  dirty = false;
+  document.getElementById('save-status').textContent = '✨ Saved at ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+  renderList(document.getElementById('search-input').value);
+  showToast('💾 Note saved!');
+}
+
+function deleteNote() {
+  if (!activeId) return;
+  if (!confirm('Delete this note? This cannot be undone.')) return;
+  notes = notes.filter(n => n.id !== activeId);
+  activeId = null;
+  persist();
+  document.getElementById('welcome-screen').style.display = 'flex';
+  document.getElementById('editor-view').style.display = 'none';
+  document.getElementById('topic-label').textContent = 'Select a topic';
+  renderList();
+  showToast('🗑️ Note deleted');
+}
+
+function persist() {
+  localStorage.setItem('jsnotes_v1', JSON.stringify(notes));
+}
+
+function filterNotes() {
+  renderList(document.getElementById('search-input').value);
+}
+
+// ---- Auto-save ----
+function markDirty() {
+  dirty = true;
+  document.getElementById('save-status').textContent = '✏️ Unsaved changes...';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { if (dirty) saveNote(); }, 2000);
+}
+
+// ---- Editor helpers ----
+function updateLines() {
+  const ta = document.getElementById('note-editor');
+  const lines = ta.value.split('\n').length;
+  const nums = Array.from({length: lines}, (_, i) => i + 1).join('\n');
+  document.getElementById('line-numbers').textContent = nums;
+  document.getElementById('line-count').textContent = lines + (lines === 1 ? ' line' : ' lines');
+  updateStats();
+}
+
+function updateStats() {
+  const val = document.getElementById('note-editor').value;
+  const words = val.trim() ? val.trim().split(/\s+/).length : 0;
+  document.getElementById('word-count').textContent = words + (words === 1 ? ' word' : ' words');
+  document.getElementById('char-count').textContent = val.length + ' chars';
+}
+
+function handleTab(e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const ta = document.getElementById('note-editor');
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = start + 2;
+    markDirty();
+    updateLines();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    saveNote();
+  }
+}
+
+function insertSnippet(text, cursorBack = 0) {
+  const ta = document.getElementById('note-editor');
+  if (!activeId) { showToast('⚠️ Open or create a note first!'); return; }
+  const start = ta.selectionStart;
+  ta.value = ta.value.substring(0, start) + text + ta.value.substring(ta.selectionEnd);
+  const pos = cursorBack ? start + text.length - cursorBack : start + text.length;
+  ta.selectionStart = ta.selectionEnd = pos;
+  ta.focus();
+  markDirty();
+  updateLines();
+}
+
+// ---- Toast ----
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ---- Init ----
+renderList();
+</script>
+</body>
+</html>
